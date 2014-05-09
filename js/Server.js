@@ -27,21 +27,71 @@ Server.getSortedByFilter = function(filter, callback) {
 }
 Server.filterData = function() {
 	var filtered = {};
-	var item; 
-	var keyword = ["sandwich", "barbecue", "pizza", "salad", "drink", "coffee", "dessert", "hot dog",
-		"indian", "american", "italian", "mexican"]
+	var item, keyword, category; 
+	var basicKeyword = {
+		"meal": [ 
+			"sandwich", "pizza", "salad", "burrito", "hot dogs", "italian", "meat", "soup",
+			"mexican", "indian", "filipino", "peruvian", "chicken", "kebab", "curry", "burger", "seafood"
+		],
+		"snack": [
+			"kettle corn", "ice cream", "dessert", "cupcake", "churros", "watermelon"
+		],
+		"beverage": [
+			"coffee", "espresso", "juice"
+		]
+	};
+
+	var findCategory = function(keyword, categories){
+		var found = [];
+		if (keyword !== null) {
+			var lower = keyword.toLowerCase();
+			for (var category in categories) {
+				var c = categories[category];
+				for (var i = 0; i < c.length; i++) {
+					if (lower.indexOf(c[i]) > -1) {
+						var t = {"mainCategory": category, "subCategory": c[i]};
+						found.push(t);
+					}
+				}
+			}
+
+		}
+		return found;
+	}
+	var findKeyword = function(menu){
+		var keyword = "";
+		if (menu && menu.indexOf(":") > - 1) {
+			keyword = menu.substring(0, menu.indexOf(":"));
+		} else if (menu && menu.length > 0) {
+			keyword = menu;
+		}
+		return keyword;
+	}
+
 	for (var i = 0; i < this.data.length; i++) {
 		item = this.data[i];
-		if (item.menu && item.menu.indexOf(":") > - 1) {
-			keyword = item.menu.substring(0, item.menu.indexOf(":"));
-		} else {
-			keyword = item.menu;
+		// keyword = findKeyword(item.menu);
+		category = findCategory(item.menu, basicKeyword);
+		if (category.length > 0) {
+			for (var j = 0; j < category.length; j++) {
+				var t = category[j];
+				if (!filtered[t.mainCategory]) {
+					filtered[t.mainCategory] = {};
+				} 
+				if (filtered[t.mainCategory] && !filtered[t.mainCategory][t.subCategory]) {
+					filtered[t.mainCategory][t.subCategory] = [];
+				}
+				// item.subCategory = category[j].subCategory;
+				filtered[category[j].mainCategory][category[j].subCategory].push(item);	
+			}
 		} 
-		if (filtered[keyword]) {
-			filtered[keyword].push(this.data[i]);
-		} else {
-			filtered[keyword] = [this.data[i]];
-		}
+		else {
+			// if (!filtered[item.menu]) {
+			// 	filtered[item.menu] = [];	
+			// }
+			// filtered[item.menu].push(item);
+			console.log(item.menu);
+		} 
 	}
 	console.log(filtered);
 }

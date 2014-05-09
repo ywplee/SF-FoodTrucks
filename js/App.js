@@ -66,9 +66,7 @@ App.MarkerCollectionView = Backbone.GoogleMaps.MarkerCollectionView.extend({
 
 App.init = function() {
   this.createMap();
-  this.readData();
-
-  
+  this.readData();  
 }
 App.readData = function() {
   var that = this;
@@ -94,7 +92,8 @@ App.createMap = function() {
   var mapOptions = {
     center: new google.maps.LatLng(37.775, -122.4183333),
     zoom: 15,
-    mapTypeId: google.maps.MapTypeId.ROADMAP
+    mapTypeId: google.maps.MapTypeId.ROADMAP,
+    disableDefaultUI: true
   }
 
   // Instantiate map
@@ -195,7 +194,6 @@ App.ListView = Backbone.View.extend({
 
     this.$el.appendTo("#listDiv");
   },
-
   render: function() {
     this.collection.each(this.addChild);
   },
