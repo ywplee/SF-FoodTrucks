@@ -11,8 +11,7 @@ Server.getAll = function(callback) {
           title: t[9],
           lat: t[22],
           lng: t[23],
-          menu: t[19],
-
+          menu: t[19] ? t[19].replace(/\:/g,"<br>"): ""
         });
     }
     that.data = listing;
@@ -20,26 +19,39 @@ Server.getAll = function(callback) {
     that.filterData();
   });
 }
-Server.getSortedByFilter = function(filter, callback) {
-	for (var i = 0; i < this.data.length; i++) {
-		console.log(this.data);
+/*
+ * Menu filed doesn't really have a valid format. After some data mining, I concluded that there
+ * are 3 primary categories for food truck, which are meals, snacks and beverages.
+ */
+Server.getFilteredData = function(filteredBy, callback) {
+	var data = [];
+	for (var type in filteredBy) {
+		var sub = filteredBy[type];
+		for (var i = 0; i < sub.length; i++) {
+			data = data.concat(this.filtered[type][sub[i]]);
+		}
 	}
+	console.log(data.length);
+	callback(data);
 }
-Server.filterData = function() {
-	var filtered = {};
-	var item, keyword, category; 
-	var basicKeyword = {
-		"meal": [ 
+Server.getKeywords = function() {
+	return {
+		"meals": [ 
 			"sandwich", "pizza", "salad", "burrito", "hot dogs", "italian", "meat", "soup",
 			"mexican", "indian", "filipino", "peruvian", "chicken", "kebab", "curry", "burger", "seafood"
 		],
-		"snack": [
+		"snacks": [
 			"kettle corn", "ice cream", "dessert", "cupcake", "churros", "watermelon"
 		],
-		"beverage": [
+		"beverages": [
 			"coffee", "espresso", "juice"
 		]
 	};
+}
+Server.filterData = function() {
+	this.filtered = {};
+	var item, keyword, category; 
+	var basicKeyword = this.getKeywords();
 
 	var findCategory = function(keyword, categories){
 		var found = [];
@@ -67,7 +79,6 @@ Server.filterData = function() {
 		}
 		return keyword;
 	}
-
 	for (var i = 0; i < this.data.length; i++) {
 		item = this.data[i];
 		// keyword = findKeyword(item.menu);
@@ -75,14 +86,13 @@ Server.filterData = function() {
 		if (category.length > 0) {
 			for (var j = 0; j < category.length; j++) {
 				var t = category[j];
-				if (!filtered[t.mainCategory]) {
-					filtered[t.mainCategory] = {};
+				if (!this.filtered[t.mainCategory]) {
+					this.filtered[t.mainCategory] = {};
 				} 
-				if (filtered[t.mainCategory] && !filtered[t.mainCategory][t.subCategory]) {
-					filtered[t.mainCategory][t.subCategory] = [];
+				if (this.filtered[t.mainCategory] && !this.filtered[t.mainCategory][t.subCategory]) {
+					this.filtered[t.mainCategory][t.subCategory] = [];
 				}
-				// item.subCategory = category[j].subCategory;
-				filtered[category[j].mainCategory][category[j].subCategory].push(item);	
+				this.filtered[category[j].mainCategory][category[j].subCategory].push(item);	
 			}
 		} 
 		else {
@@ -90,8 +100,8 @@ Server.filterData = function() {
 			// 	filtered[item.menu] = [];	
 			// }
 			// filtered[item.menu].push(item);
-			console.log(item.menu);
+			// maybe create an etc category to put this venue
+			// console.log(item.menu);
 		} 
 	}
-	console.log(filtered);
 }
