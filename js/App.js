@@ -1,6 +1,8 @@
 Number.prototype.toRad = function () { return this * Math.PI / 180; }
 
 var App = {};
+App.APIEndpoint =  "http://ec2-54-84-43-41.compute-1.amazonaws.com/";
+// App.APIEndpoint =  "http://localhost:8080/";
 App.Location = Backbone.GoogleMaps.Location.extend();
 App.LocationCollection = Backbone.GoogleMaps.LocationCollection.extend({
   model: App.Location,
@@ -163,7 +165,7 @@ App.readData = function() {
     listView.render();
   }
   var that = this;
-  $.getJSON("http://ec2-54-84-43-41.compute-1.amazonaws.com/all", function(d) {
+  $.getJSON(this.APIEndpoint + "all", function(d) {
     applyData(d);
   });
 }
@@ -271,7 +273,7 @@ App.filterData = function(){
   var p = {filterBy: this.filterBy};
   $.ajax({
     datatype: "json",
-    url: "http://ec2-54-84-43-41.compute-1.amazonaws.com/userFilter/" + JSON.stringify(this.filterBy),
+    url: this.APIEndpoint + "userFilter/" + JSON.stringify(this.filterBy),
     success:function(d) {
       applyData(d);
     }
