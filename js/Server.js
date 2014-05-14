@@ -1,18 +1,19 @@
 var Server = {};
 Server.getAll = function(callback) {
 	var that = this;
-	$.getJSON("assets/foodtrucks.json", function(d) {
-    var data = d.data;
+	$.getJSON("http://data.sfgov.org/resource/rqzj-sfat.json", function(d) {
     var listing = [];
-    for (var i = 0; i < data.length; i++) {
-        var t = data[i];
-        listing.push({
-          type: t[10],
-          title: t[9],
-          lat: t[22],
-          lng: t[23],
-          menu: t[19] ? t[19].replace(/\:/g,"<br>"): ""
-        });
+    for (var i = 0; i < d.length; i++) {
+        var t = d[i];
+        if (t.status === "APPROVED" && t.location) {
+          listing.push({
+            type: t.facilitytype,
+            title: t.applicant,
+            lat: t.location.latitude,
+            lng: t.location.longitude,
+            menu: t.fooditems ? t.fooditems.replace(/\:/g,"<br>"): ""
+          });
+        }
     }
     that.data = listing;
     callback(listing);
@@ -34,24 +35,10 @@ Server.getFilteredData = function(filteredBy, callback) {
 	console.log(data.length);
 	callback(data);
 }
-Server.getKeywords = function() {
-	return {
-		"meals": [ 
-			"sandwich", "pizza", "salad", "burrito", "hot dogs", "italian", "meat", "soup",
-			"mexican", "indian", "filipino", "peruvian", "chicken", "kebab", "curry", "burger", "seafood"
-		],
-		"snacks": [
-			"kettle corn", "ice cream", "dessert", "cupcake", "churros", "watermelon"
-		],
-		"beverages": [
-			"coffee", "espresso", "juice"
-		]
-	};
-}
-Server.filterData = function() {
+Server.filterData = function(keywords) {
 	this.filtered = {};
 	var item, keyword, category; 
-	var basicKeyword = this.getKeywords();
+	var basicKeyword = keywords;
 
 	var findCategory = function(keyword, categories){
 		var found = [];

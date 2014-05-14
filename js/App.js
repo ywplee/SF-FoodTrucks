@@ -24,20 +24,24 @@ App.LocationCollection = Backbone.GoogleMaps.LocationCollection.extend({
     var p2 = b.getLatLng();
     a = this.distance(p1.lat(), p1.lng());
     b = this.distance(p2.lat(), p2.lng());
-    // a = a.attributes.title;
-    // b = b.attribu/tes.title;
     return a > b ?  1 : a < b ? -1 : 0;
   }
 });
 
 App.InfoWindow = Backbone.GoogleMaps.InfoWindow.extend({
-  template: '#infoWindow-template'
+  template: '#infoWindow-template',
+  render: function() {
+    this.$el.addClass("info-window");
+    Backbone.GoogleMaps.InfoWindow.prototype.render.call(this);
+  }
 });
 
 App.MarkerView = Backbone.GoogleMaps.MarkerView.extend({
   infoWindow: App.InfoWindow,
   toggleSelect: function() {
     this.model.toggleSelect();
+    // I don't think it's a good idea to center to the marker position
+    // App.map.setCenter(this.model.getLatLng());
   },
 
 });
@@ -107,6 +111,19 @@ App.ListView = Backbone.View.extend({
     this.render();
   }
 });
+// got this keywords by mining the menuitem property
+App.keywords = {
+    "meals": [ 
+      "sandwich", "pizza", "salad", "burrito", "hot dogs", "italian", "meat", "soup",
+      "mexican", "indian", "filipino", "peruvian", "chicken", "kebab", "curry", "burger", "seafood"
+    ],
+    "snacks": [
+      "kettle corn", "ice cream", "dessert", "cupcake", "churros", "watermelon"
+    ],
+    "beverages": [
+      "coffee", "espresso", "juice"
+    ]
+};
 
 App.init = function() {
   this.createMap();
@@ -115,7 +132,7 @@ App.init = function() {
 }
 App.createFilterMenu = function() {
   this.filterBy = {};
-  var keywords = Server.getKeywords();
+  var keywords = this.keywords;
   var menu = $("#filterMenu");
   for (var m in keywords) {
     menu.append(m);
@@ -145,7 +162,10 @@ App.readData = function() {
     });
     listView.render();
   }
-  Server.getAll(applyData);    
+  var that = this;
+  $.getJSON("http://ec2-54-84-43-41.compute-1.amazonaws.com/all", function(d) {
+    applyData(d);
+  });
 }
 // is this reliable? current location for me is off by 30 miles.
 App.setCurrentLocation = function() {
@@ -204,9 +224,14 @@ App.createMap = function() {
       currentLocMarker.setAnimation(google.maps.Animation.BOUNCE);
     }
   });
+  // drag event for the current location marker
+  google.maps.event.addListener(currentLocMarker, 'dragend', function(ev) {
+    that.map.panTo(ev.latLng);
+    that.sortByDistance(ev.latLng);
+  });
   // click event registerd to the map
   google.maps.event.addListener(this.map, 'click', function(ev) {
-    that.map.setZoom(17);
+    // that.map.setZoom(17);
     that.map.panTo(ev.latLng);
     currentLocMarker.setPosition(ev.latLng);
     // resort the item list by distance
@@ -220,7 +245,7 @@ App.sortByDistance = function(p) {
   this.places.sort();
 }
 App.filterData = function(){
-  var c = Server.getKeywords();
+  var c = this.keywords;
   var style = event.target.style;
   var item = event.target.innerHTML;
   var type = event.target.parentElement.id;
@@ -243,5 +268,12 @@ App.filterData = function(){
     // var d = new that.LocationCollection(data)
     that.places.set(data);
   }
-  Server.getFilteredData(this.filterBy, applyData); 
+  var p = {filterBy: this.filterBy};
+  $.ajax({
+    datatype: "json",
+    url: "http://ec2-54-84-43-41.compute-1.amazonaws.com/userFilter/" + JSON.stringify(this.filterBy),
+    success:function(d) {
+      applyData(d);
+    }
+  });
 }

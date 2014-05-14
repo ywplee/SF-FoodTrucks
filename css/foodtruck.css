@@ -114,6 +114,11 @@ body {
 
   width: 80%;
 }
+.info-window{
+  width: 200px;
+  max-height: 200px;
+  overflow: scroll;
+}
 button.filter-menu-button{
   display: inline-block;
   padding: 0 5px;
