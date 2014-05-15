@@ -53,7 +53,6 @@ Possible future features
 
 Anything I want to do differently If I do it again
 --------------------------------------------------
-* Probably add a loading spinner
 * More testings, should've used TDD development process
 
 
