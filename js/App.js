@@ -1,4 +1,5 @@
-Number.prototype.toRad = function () { return this * Math.PI / 180; }
+"use strict";
+Number.prototype.toRad = function () { return this * Math.PI / 180; };
 
 var App = {};
 App.APIEndpoint =  "http://ec2-54-84-43-41.compute-1.amazonaws.com/";
@@ -66,7 +67,7 @@ App.ItemView = Backbone.View.extend({
   },
 
   initialize: function() {
-    _.bindAll(this, 'render', 'selectItem', 'deselectItem')
+    _.bindAll(this, 'render', 'selectItem', 'deselectItem');
     this.model.on("remove", this.close, this);
   },
 
@@ -82,12 +83,12 @@ App.ItemView = Backbone.View.extend({
 
   selectItem: function() {
     this.model.select();
-    this.$el.attr("class", "selected")
+    this.$el.attr("class", "selected");
   },
 
   deselectItem: function() {
     this.model.deselect();
-    this.$el.attr("class", "not-selected")
+    this.$el.attr("class", "not-selected");
   }
 });
 
@@ -131,7 +132,7 @@ App.init = function() {
   this.createMap();
   this.createFilterMenu();
   this.readData();  
-}
+};
 App.createFilterMenu = function() {
   this.filterBy = {};
   var keywords = this.keywords;
@@ -163,16 +164,15 @@ App.readData = function() {
       collection: that.places
     });
     listView.render();
-  }
-  var that = this;
+  };
   $.getJSON(this.APIEndpoint + "all", function(d) {
     applyData(d);
   });
-}
+};
 // is this reliable? current location for me is off by 30 miles.
 App.setCurrentLocation = function() {
   var that = this;
-
+  var initialLocation;
   if(navigator.geolocation) {
     browserSupportFlag = true;
     navigator.geolocation.getCurrentPosition(function(position) {
@@ -189,7 +189,7 @@ App.setCurrentLocation = function() {
   }
 
   function handleNoGeolocation(errorFlag) {
-    if (errorFlag == true) {
+    if (errorFlag === true) {
       console.log("Geolocation service failed.");
       initialLocation = newyork;
     } else {
@@ -198,7 +198,7 @@ App.setCurrentLocation = function() {
     }
     that.map.setCenter(initialLocation);
   }
-}
+};
 App.createMap = function() {
   var that = this;
   var markers = [];
@@ -220,7 +220,7 @@ App.createMap = function() {
     position: uberHQ
   });
   google.maps.event.addListener(currentLocMarker, 'click', function(){
-    if (currentLocMarker.getAnimation() != null) {
+    if (currentLocMarker.getAnimation() !== null) {
       currentLocMarker.setAnimation(null);
     } else {
       currentLocMarker.setAnimation(google.maps.Animation.BOUNCE);
@@ -241,26 +241,25 @@ App.createMap = function() {
   });
   // initially bounce pacman to inform user where they are
   currentLocMarker.setAnimation(google.maps.Animation.BOUNCE);
-}
+};
 App.sortByDistance = function(p) {
   this.places.curLocation = {lat: p.lat(), lng: p.lng()};
   this.places.sort();
-}
+};
 App.filterData = function(){
-  var c = this.keywords;
   var style = event.target.style;
   var item = event.target.innerHTML;
   var type = event.target.parentElement.id;
   var that = this;
   if (style.color == "white") {
     style["background-color"] = "transparent";
-    style["color"] = "black";
+    style.color = "black";
     var index = that.filterBy[type].indexOf(item);
     that.filterBy[type].splice(index, 1);
 
   } else {
     style["background-color"] = "rgba(0,0,0,0.9)";
-    style["color"] = "white";
+    style.color = "white";
     if (!that.filterBy[type]) {
       that.filterBy[type] = [];
     }
@@ -269,8 +268,7 @@ App.filterData = function(){
   var applyData = function(data) {
     // var d = new that.LocationCollection(data)
     that.places.set(data);
-  }
-  var p = {filterBy: this.filterBy};
+  };
   $.ajax({
     datatype: "json",
     url: this.APIEndpoint + "userFilter/" + JSON.stringify(this.filterBy),
@@ -278,4 +276,4 @@ App.filterData = function(){
       applyData(d);
     }
   });
-}
+};
