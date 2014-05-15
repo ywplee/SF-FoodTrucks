@@ -169,7 +169,8 @@ App.readData = function() {
     applyData(d);
   });
 };
-// is this reliable? current location for me is off by 30 miles.
+// Not reliable on my machine, need to test on other machine or something
+// current location is off by 30 miles.
 App.setCurrentLocation = function() {
   var that = this;
   var initialLocation;
@@ -268,12 +269,16 @@ App.filterData = function(){
   var applyData = function(data) {
     // var d = new that.LocationCollection(data)
     that.places.set(data);
+    $("#loading-indicator").css("visibility", "hidden");
   };
-  $.ajax({
-    datatype: "json",
-    url: this.APIEndpoint + "userFilter/" + JSON.stringify(this.filterBy),
-    success:function(d) {
-      applyData(d);
-    }
-  });
+  $("#loading-indicator").css("visibility", "visible");
+  setTimeout(function() {
+    jQuery.ajax({
+      datatype: "json",
+      url: that.APIEndpoint + "userFilter/" + JSON.stringify(that.filterBy),
+      success:function(d) {
+        applyData(d);
+      }
+    });
+  }, 100);
 };
