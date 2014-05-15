@@ -129,9 +129,13 @@ App.keywords = {
 };
 
 App.init = function() {
-  this.createMap();
-  this.createFilterMenu();
-  this.readData();  
+  $("#loading-indicator").css("visibility", "visible");
+  var that = this;
+  setTimeout(function() {
+    that.createMap();
+    that.createFilterMenu();
+    that.readData();
+  });
 };
 App.createFilterMenu = function() {
   this.filterBy = {};
@@ -164,6 +168,7 @@ App.readData = function() {
       collection: that.places
     });
     listView.render();
+    $("#loading-indicator").css("visibility", "hidden");
   };
   $.getJSON(this.APIEndpoint + "all", function(d) {
     applyData(d);
